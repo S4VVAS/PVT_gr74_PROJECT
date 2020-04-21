@@ -61,7 +61,7 @@
 		<repository>
 			<id>internal.repo</id>
 			<name>Internal repo</name>
-			<url>git@github.com/knopp10000/HistoryGoServer.git</url>
+			<url>git@github.com/S4VVAS/PVT_gr74_PROJECT_BACKEND.git</url>
 		</repository>
 	</distributionManagement>
 
