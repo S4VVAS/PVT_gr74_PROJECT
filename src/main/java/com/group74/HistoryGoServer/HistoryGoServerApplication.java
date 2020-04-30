@@ -21,5 +21,11 @@ public class HistoryGoServerApplication extends SpringBootServletInitializer {
 		return String.format("Hello %s", name);
 
 	}
+	
+	@GetMapping("/bruh")
+	public String bruh(@RequestParam(value ="name", defaultValue ="bruh")String name) {
+		return String.format("Sup %s", name);
+
+	}
 
 }
