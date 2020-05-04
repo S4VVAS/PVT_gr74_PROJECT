@@ -1,8 +1,5 @@
 package com.group74.HistoryGoServer;
 
-
-import java.io.File;
-
 import org.json.simple.JSONObject;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
