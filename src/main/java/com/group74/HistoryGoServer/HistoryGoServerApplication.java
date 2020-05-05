@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
+//d
 @SpringBootApplication
 @RestController
 public class HistoryGoServerApplication extends SpringBootServletInitializer {
