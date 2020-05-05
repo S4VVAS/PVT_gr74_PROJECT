@@ -15,13 +15,21 @@
 
 package com.group74.HistoryGoServer;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import java.util.Scanner;
+import java.util.stream.Stream;
+
+import org.json.simple.parser.JSONParser;
 
 public class Requester {
 	
@@ -38,8 +46,47 @@ public class Requester {
 			.build();
 			
 		try {
-			HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
-			System.out.println(response.body());	
+			
+			HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+			
+			InputStreamReader isr = new InputStreamReader(response.body());
+			
+			char c = (char) isr.read();
+			while (c != -1) {
+				System.out.print(c);
+				c = (char) isr.read();
+			}
+			
+		
+			
+			//HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+//			System.out.println(response.body());	
+		
+			
+//			Scanner sc = new Scanner(response.body());
+//			while (sc.hasNext()) {
+//				sc.next();
+//				sc.findInLine("record");
+//				sc.findInLine("desc\":\"");
+//				StringBuilder sb = new StringBuilder();
+//				
+//				String current = sc.next();
+//				while (!current.equals("}")) {
+//					sb.append(current);
+//					System.out.print(current);
+//					current = sc.next();
+//				}
+//				System.out.println(sb.toString());
+//				System.out.println(sc.nextLine());
+//				
+//				while (!sc.next().equals("\"")) {
+//					System.out.println(sc.next());
+//					sb.append(sc.next());
+//				}
+//				System.out.println(sb.toString());
+//				}
+//				sc.close();
+					
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
