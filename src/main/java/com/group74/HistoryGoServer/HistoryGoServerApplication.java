@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,7 +25,7 @@ public class HistoryGoServerApplication extends SpringBootServletInitializer {
 	
 	public static void main(String[] args) {
 		JSONObject obj = new JSONObject();
-		obj.put("JSON", "OBJ");
+		//obj.put("JSON", "OBJ");
 		JSONArr = new JSONObject[] {obj};
 		SpringApplication.run(HistoryGoServerApplication.class, args);
 	}
@@ -35,16 +36,14 @@ public class HistoryGoServerApplication extends SpringBootServletInitializer {
 
 	}
 	
-	@PostMapping("/upload")
-	public String handleFileUpload(@RequestParam("file") MultipartFile file,
-			RedirectAttributes redirectAttributes) {
+	@GetMapping("/getPlace")
+	public String handleFileUpload(@RequestParam Double lon, @RequestParam Double lat){
 
-		redirectAttributes.addFlashAttribute("message",
-				"You successfully uploaded " + file.getOriginalFilename() + "!");
+		//redirectAttributes.addFlashAttribute("message",
+		//		"You successfully uploaded " + file.getOriginalFilename() + "!");
 
-		return "redirect:/hello";
+		return "hello";
 	}
-
 }
 
 
