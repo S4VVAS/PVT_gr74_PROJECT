@@ -36,8 +36,8 @@ public class HistoryGoServerApplication extends SpringBootServletInitializer {
 	}
 
 	@GetMapping("/hello")
-	public JSONObject hello(@RequestParam(value ="name", defaultValue ="World")String name) {
-		return JSONArr[0];
+	public String hello(@RequestParam(value ="name", defaultValue ="World")String name) {
+		return "Hello World";
 
 	}
 	
