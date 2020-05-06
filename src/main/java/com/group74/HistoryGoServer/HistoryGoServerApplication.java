@@ -26,9 +26,7 @@ public class HistoryGoServerApplication extends SpringBootServletInitializer {
 	public static void main(String[] args) {
 		reqTEST.getPlaces(59.328, 18.096);
 		
-		JSONArr = new JSONObject[] {parser.createJSON("kaknäs", "tall building", 
-				new String[] {"https://sv.wikipedia.org/wiki/Kakn%C3%A4stornet#/media/Fil:Kakn%C3%A4stornet_2008x.jpg"
-						, "https://sv.wikipedia.org/wiki/Kakn%C3%A4stornet#/media/Fil:Kakn%C3%A4stornet_bygget_1966.jpg"})};
+		
 		SpringApplication.run(HistoryGoServerApplication.class, args);
 	}
 
@@ -40,6 +38,9 @@ public class HistoryGoServerApplication extends SpringBootServletInitializer {
 	
 	@GetMapping("/jsonTest")
 	public JSONObject hello() {
+		JSONArr = new JSONObject[] {parser.createJSON("kaknäs", "tall building", 
+				new String[] {"https://sv.wikipedia.org/wiki/Kakn%C3%A4stornet#/media/Fil:Kakn%C3%A4stornet_2008x.jpg"
+						, "https://sv.wikipedia.org/wiki/Kakn%C3%A4stornet#/media/Fil:Kakn%C3%A4stornet_bygget_1966.jpg"})};
 		return JSONArr[0];
 	}
 	
