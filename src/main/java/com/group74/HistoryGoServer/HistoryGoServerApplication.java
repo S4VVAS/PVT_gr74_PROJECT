@@ -38,7 +38,6 @@ public class HistoryGoServerApplication extends SpringBootServletInitializer {
 
 	}
 	
-	
 	@GetMapping("/jsonTest")
 	public JSONObject hello() {
 		return JSONArr[0];
