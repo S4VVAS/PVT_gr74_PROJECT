@@ -22,13 +22,9 @@ import org.json.simple.parser.ParseException;
 public class Requester {
 
 	public Requester() {}
-	
-	// Tar två koordinater, returnerar JSON-objekt med platser
-	public JSONObject getPlaces(double lat, double lon) {
-		JSONObject places = new JSONObject();
-		HashSet<JSONObject> jList = new HashSet();
-		HashSet<String> names = new HashSet();
 		
+	// Tar två koordinater, returnerar JSONArray med platser
+	public JSONArray getPlaces(double lat, double lon) {
 		String url = makeURL(lat, lon);
 
 		HttpClient client = HttpClient.newBuilder()
@@ -45,37 +41,36 @@ public class Requester {
 			// Bör kanske använda sendAsync?
 			HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
 			JSONArray records = parseBody(response.body());
-			if (records != null) {
-				
+			if (records == null) {
+				return null;
 			}
+			JSONArray places = new JSONArray();
 			for (int i = 0; i < records.size(); i++) {
 				JSONObject record = (JSONObject) records.get(i);
 				JSONObject graph = (JSONObject) record.get("record");
 				JSONArray array = (JSONArray) graph.get("@graph");
 				JSONObject plats = new JSONObject();
-				
 				for (int j = 0; j < array.size(); j++) {
 					JSONObject current = (JSONObject) array.get(j);
 					if (current.get("name") != null) {
-						if (!names.contains(current.get("name"))) {
-							names.add("name");
-							plats.put("name", current.get("name"));	
-						}
+						plats.put("name", current.get("name"));	
 					}
 					if (current.get("desc") != null) {
 						plats.put("desc", current.get("desc"));
 					}
-					if (current.get("thumbnail") != null) {
-						plats.put("thumb", current.get("thumbnail"));
+					if (current.get("coordinates") != null) {
+						plats.put("coor", current.get("coordinates"));
+					}
+					if (current.get("fromTime") != null) {
+						plats.put("date", current.get("fromTime"));
+					}
+					if (current.get("lowresSource") != null) {
+						plats.put("img", current.get("lowresSource"));
 					}
 				}
-				if (!jList.contains(plats)) {
-					jList.add(plats);
-					places.put(i, plats);
-				}
+				places.add(plats);
 			}
 			return places;
-			
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 			return null;
@@ -84,10 +79,10 @@ public class Requester {
 
 	// Returnerar URI-sträng som används för geografisk sökning i API:et
 	private String makeURL(double lat, double lon) {
-		double leftLat = lat - 0.002;
-		double leftLon = lon - 0.002;
-		double rightLat = lat + 0.002;
-		double rightLon = lon + 0.002;
+		double leftLat = lat - 0.003;
+		double leftLon = lon - 0.003;
+		double rightLat = lat + 0.003;
+		double rightLon = lon + 0.003;
 		return "http://kulturarvsdata.se/ksamsok/api?method=search&query=boundingBox=/WGS84%20%22" + leftLon + "%20"
 				+ leftLat + "%20" + rightLon + "%20" + rightLat + "%22%20AND%20itemType=%22Foto%22";
 	}
@@ -102,10 +97,6 @@ public class Requester {
 			e.printStackTrace();
 			return null;
 		}
-	}
-	
-	private JSONArray retrieveRecords() {
-		return null;
 	}
 
 }
