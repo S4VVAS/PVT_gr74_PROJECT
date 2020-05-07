@@ -12,15 +12,23 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import java.util.HashSet;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class Requester {
 
-	public Requester() {
-	}
-
-	// Returnerar tillfälligt endast en sträng, bör returnera JSON-fil eller annat
-	// passande format.
-	public String getPlaces(double lat, double lon) {
+	public Requester() {}
+	
+	// Tar två koordinater, returnerar JSON-objekt med platser
+	public JSONObject getPlaces(double lat, double lon) {
+		JSONObject places = new JSONObject();
+		HashSet<JSONObject> jList = new HashSet();
+		HashSet<String> names = new HashSet();
+		
 		String query = getURL(lat, lon);
 
 		HttpClient client = HttpClient.newBuilder()
@@ -28,19 +36,52 @@ public class Requester {
 				.build();
 
 		HttpRequest request = HttpRequest.newBuilder()
+				.GET()
 				.uri(URI.create(query))
 				.header("Accept", "application/json")
 				.build();
-
+		
 		try {
 			// Bör kanske använda sendAsync?
 			HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
-			return response.body();
-		} catch (IOException | InterruptedException e) {
+			
+			JSONParser jParser = new JSONParser();	
+			JSONObject one = (JSONObject) jParser.parse(response.body());
+			JSONObject result = (JSONObject) one.get("result");
+			JSONArray records = (JSONArray) result.get("records");
+			
+			for (int i = 0; i < records.size(); i++) {
+				JSONObject record = (JSONObject) records.get(i);
+				JSONObject graph = (JSONObject) record.get("record");
+				JSONArray array = (JSONArray) graph.get("@graph");
+				JSONObject plats = new JSONObject();
+				
+				for (int j = 0; j < array.size(); j++) {
+					JSONObject current = (JSONObject) array.get(j);
+					if (current.get("name") != null) {
+						if (!names.contains(current.get("name"))) {
+							names.add("name");
+							plats.put("name", current.get("name"));	
+						}
+					}
+					if (current.get("desc") != null) {
+						plats.put("desc", current.get("desc"));
+					}
+					if (current.get("thumbnail") != null) {
+						plats.put("thumb", current.get("thumbnail"));
+					}
+				}
+				if (!jList.contains(plats)) {
+					jList.add(plats);
+					places.put(i, plats);
+				}
+			}
+			return places;
+			
+		} catch (IOException | InterruptedException | ParseException e) {
 			e.printStackTrace();
 			return null;
 		}
-
 	}
 
 	// Returnerar URL-sträng som används för geografisk sökning i API:et

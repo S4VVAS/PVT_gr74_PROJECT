@@ -46,7 +46,7 @@ public class HistoryGoServerApplication extends SpringBootServletInitializer {
 	
 	//URL FORMAT = http://localhost:8080/getPlace?lats=56&lats=46
 	@RequestMapping(value="/getPlace", method = RequestMethod.GET)
-	public String handleFileUpload(Model model, @RequestParam(value = "lats", required = true)List<String> lats) throws NumberFormatException{
+	public JSONObject handleFileUpload(Model model, @RequestParam(value = "lats", required = true)List<String> lats) throws NumberFormatException{
 		try {
 			return reqTEST.getPlaces(Double.parseDouble(lats.get(0)), Double.parseDouble(lats.get(1)));
 		}catch(NumberFormatException e) {}
