@@ -19,37 +19,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class HistoryGoServerApplication extends SpringBootServletInitializer {
 	
 	static JSONObject[] JSONArr;
-	static final Requester reqTEST = new Requester();
+	static final Requester requester = new Requester();
 	static final JSONParser parser = new JSONParser();
 
 	
 	public static void main(String[] args) {
-		reqTEST.getPlaces(59.328, 18.096);
-		
-		
 		SpringApplication.run(HistoryGoServerApplication.class, args);
 	}
-
-	@GetMapping("/hello")
-	public String hello(@RequestParam(value ="name", defaultValue ="World")String name) {
-		return "Hello World";
-
-	}
 	
-	@GetMapping("/jsonTest")
-	public JSONObject hello() {
-		JSONArr = new JSONObject[] {parser.createJSON("kaknäs", "tall building", 
-				new String[] {"https://sv.wikipedia.org/wiki/Kakn%C3%A4stornet#/media/Fil:Kakn%C3%A4stornet_2008x.jpg"
-						, "https://sv.wikipedia.org/wiki/Kakn%C3%A4stornet#/media/Fil:Kakn%C3%A4stornet_bygget_1966.jpg"})};
-		return JSONArr[0];
-	}
-	
-	//URL FORMAT = http://localhost:8080/getPlace?lats=56&lats=46
-	@RequestMapping(value="/getPlace", method = RequestMethod.GET)
-	public JSONObject handleFileUpload(Model model, @RequestParam(value = "lats", required = true)List<String> lats) throws NumberFormatException{
-		try {
-			return reqTEST.getPlaces(Double.parseDouble(lats.get(0)), Double.parseDouble(lats.get(1)));
-		}catch(NumberFormatException e) {}
-		return null;
+	//URL FORMAT = http://localhost:8080/getPlaces?lat=56&lon=46
+	@GetMapping(value="/getPlaces")
+	public JSONObject getPlaces(@RequestParam(required = true) double lat,
+								@RequestParam(required = true) double lon) {
+		return requester.getPlaces(lat, lon);		
 	}
 }

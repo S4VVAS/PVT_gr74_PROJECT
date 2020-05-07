@@ -29,7 +29,7 @@ public class Requester {
 		HashSet<JSONObject> jList = new HashSet();
 		HashSet<String> names = new HashSet();
 		
-		String query = getURL(lat, lon);
+		String url = makeURL(lat, lon);
 
 		HttpClient client = HttpClient.newBuilder()
 				.connectTimeout(Duration.ofSeconds(5))
@@ -37,19 +37,17 @@ public class Requester {
 
 		HttpRequest request = HttpRequest.newBuilder()
 				.GET()
-				.uri(URI.create(query))
+				.uri(URI.create(url))
 				.header("Accept", "application/json")
 				.build();
 		
 		try {
 			// Bör kanske använda sendAsync?
 			HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
-			
-			JSONParser jParser = new JSONParser();	
-			JSONObject one = (JSONObject) jParser.parse(response.body());
-			JSONObject result = (JSONObject) one.get("result");
-			JSONArray records = (JSONArray) result.get("records");
-			
+			JSONArray records = parseBody(response.body());
+			if (records != null) {
+				
+			}
 			for (int i = 0; i < records.size(); i++) {
 				JSONObject record = (JSONObject) records.get(i);
 				JSONObject graph = (JSONObject) record.get("record");
@@ -78,20 +76,36 @@ public class Requester {
 			}
 			return places;
 			
-		} catch (IOException | InterruptedException | ParseException e) {
+		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
 
-	// Returnerar URL-sträng som används för geografisk sökning i API:et
-	private String getURL(double lat, double lon) {
+	// Returnerar URI-sträng som används för geografisk sökning i API:et
+	private String makeURL(double lat, double lon) {
 		double leftLat = lat - 0.002;
 		double leftLon = lon - 0.002;
 		double rightLat = lat + 0.002;
 		double rightLon = lon + 0.002;
 		return "http://kulturarvsdata.se/ksamsok/api?method=search&query=boundingBox=/WGS84%20%22" + leftLon + "%20"
-				+ leftLat + "%20" + rightLon + "%20" + rightLat + "%22";
+				+ leftLat + "%20" + rightLon + "%20" + rightLat + "%22%20AND%20itemType=%22Foto%22";
+	}
+	
+	private JSONArray parseBody(String body) {
+		try {
+			JSONParser parser = new JSONParser();	
+			JSONObject response = (JSONObject) parser.parse(body);
+			JSONObject result = (JSONObject) response.get("result");
+			return (JSONArray) result.get("records");
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	private JSONArray retrieveRecords() {
+		return null;
 	}
 
 }
