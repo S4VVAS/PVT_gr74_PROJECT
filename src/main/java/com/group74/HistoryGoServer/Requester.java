@@ -1,6 +1,5 @@
 /*
  * Skapa instans av klass, anropa sedan getPlaces med två doubles (latitud och longitud).
- * getPlaces returnerar för tillfället endast en sträng.
  */
 
 package com.group74.HistoryGoServer;
@@ -12,7 +11,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
-import java.util.HashSet;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -20,9 +18,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class Requester {
-
+	
 	public Requester() {}
-		
+	
 	// Tar två koordinater, returnerar JSONArray med platser
 	public JSONArray getPlaces(double lat, double lon) {
 		String url = makeURL(lat, lon);
@@ -38,7 +36,6 @@ public class Requester {
 				.build();
 		
 		try {
-			// Bör kanske använda sendAsync?
 			HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
 			JSONArray records = parseBody(response.body());
 			if (records == null) {
@@ -59,7 +56,9 @@ public class Requester {
 						plats.put("desc", current.get("desc"));
 					}
 					if (current.get("coordinates") != null) {
-						plats.put("coor", current.get("coordinates"));
+						String[] coor = trimCoordinates((String) current.get("coordinates"));
+						plats.put("lat", coor[0]);
+						plats.put("lon", coor[1]);
 					}
 					if (current.get("fromTime") != null) {
 						plats.put("date", current.get("fromTime"));
@@ -77,16 +76,17 @@ public class Requester {
 		}
 	}
 
-	// Returnerar URI-sträng som används för geografisk sökning i API:et
+	// Returnerar URL-sträng som används för geografisk sökning i API:et
 	private String makeURL(double lat, double lon) {
 		double leftLat = lat - 0.003;
 		double leftLon = lon - 0.003;
 		double rightLat = lat + 0.003;
 		double rightLon = lon + 0.003;
 		return "http://kulturarvsdata.se/ksamsok/api?method=search&query=boundingBox=/WGS84%20%22" + leftLon + "%20"
-				+ leftLat + "%20" + rightLon + "%20" + rightLat + "%22%20AND%20itemType=%22Foto%22";
+				+ leftLat + "%20" + rightLon + "%20" + rightLat + "%22%20AND%20itemType=%22Foto%22&hitsPerPage=500";
 	}
 	
+	// Skalar bort onödig info från JSON-filen som fås från API:et
 	private JSONArray parseBody(String body) {
 		try {
 			JSONParser parser = new JSONParser();	
@@ -97,6 +97,17 @@ public class Requester {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	// Plockar ut latitud och longitud från posten "coordinates" som fås från API:et
+	private String[] trimCoordinates(String coor) {
+		StringBuilder sb = new StringBuilder(coor);
+		sb.delete(0, 113);
+		int lonEnd = sb.indexOf(",");
+		String lon = sb.substring(0, lonEnd);
+		int latEnd = sb.indexOf("<");
+		String lat = sb.substring(lonEnd + 1, latEnd);
+		return new String[] {lat, lon};
 	}
 
 }
