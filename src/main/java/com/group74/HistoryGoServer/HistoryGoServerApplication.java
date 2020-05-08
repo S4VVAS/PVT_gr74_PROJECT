@@ -21,7 +21,7 @@ public class HistoryGoServerApplication extends SpringBootServletInitializer {
 	//URL FORMAT = http://localhost:8080/getPlaces?lat=56&lon=46
 	@GetMapping(value="/getPlaces")
 	public JSONArray getPlaces(@RequestParam(required = true) double lat,
-								@RequestParam(required = true) double lon) {
-		return req.getPlaces(lat, lon);		
+							   @RequestParam(required = true) double lon) {
+		return req.getPlaces(lat, lon);
 	}
 }

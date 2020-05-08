@@ -66,6 +66,9 @@ public class Requester {
 					if (current.get("lowresSource") != null) {
 						plats.put("img", current.get("lowresSource"));
 					}
+					if (current.get("itemLabel") != null) {
+						plats.put("title", current.get("itemLabel"));
+					}
 				}
 				places.add(plats);
 			}
