@@ -11,6 +11,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -20,6 +23,11 @@ import org.json.simple.parser.ParseException;
 public class Requester {
 	
 	public Requester() {}
+	
+	public static void main(String[] args) {
+		Requester req = new Requester();
+		req.getPlaces(59.337, 18.089);
+	}
 	
 	// Tar två koordinater, returnerar JSONArray med platser
 	public JSONArray getPlaces(double lat, double lon) {
@@ -37,42 +45,56 @@ public class Requester {
 		
 		try {
 			HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+			
 			JSONArray records = parseBody(response.body());
 			if (records == null) {
 				return null;
 			}
-			JSONArray places = new JSONArray();
+			
+			JSONObject places = new JSONObject();
 			for (int i = 0; i < records.size(); i++) {
 				JSONObject record = (JSONObject) records.get(i);
 				JSONObject graph = (JSONObject) record.get("record");
 				JSONArray array = (JSONArray) graph.get("@graph");
-				JSONObject plats = new JSONObject();
+				JSONObject place = new JSONObject();
+				String position = "No data";
 				for (int j = 0; j < array.size(); j++) {
 					JSONObject current = (JSONObject) array.get(j);
 					if (current.get("name") != null) {
-						plats.put("name", current.get("name"));	
+						place.put("name", current.get("name"));	
 					}
 					if (current.get("desc") != null) {
-						plats.put("desc", current.get("desc"));
+						place.put("desc", current.get("desc"));
 					}
 					if (current.get("coordinates") != null) {
-						String[] coor = trimCoordinates((String) current.get("coordinates"));
-						plats.put("lat", coor[0]);
-						plats.put("lon", coor[1]);
+						String coordinates = trimCoordinates((String) current.get("coordinates"));
+						position = coordinates;
 					}
 					if (current.get("fromTime") != null) {
-						plats.put("date", current.get("fromTime"));
+						place.put("date", current.get("fromTime"));
 					}
 					if (current.get("lowresSource") != null) {
-						plats.put("img", current.get("lowresSource"));
+						place.put("img", current.get("lowresSource"));
 					}
 					if (current.get("itemLabel") != null) {
-						plats.put("title", current.get("itemLabel"));
+						place.put("title", current.get("itemLabel"));
 					}
 				}
-				places.add(plats);
+				JSONArray placeArray = places.get(position) == null ? new JSONArray() : (JSONArray) places.get(position);
+				placeArray.add(place);
+				places.put(position, placeArray);
 			}
-			return places;
+			JSONArray result = new JSONArray();
+			places.forEach((pos, arr) -> { 
+				JSONObject entry = new JSONObject();
+				String coordinates = (String) pos;
+				int latEnd = coordinates.indexOf(" ");
+				entry.put("lat", coordinates.substring(0, latEnd));
+				entry.put("lon", coordinates.substring(latEnd + 1));
+				entry.put("entries", places.get(coordinates));
+				result.add(entry);
+			});
+			return result;
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 			return null;
@@ -102,15 +124,15 @@ public class Requester {
 		}
 	}
 	
-	// Plockar ut latitud och longitud från posten "coordinates" som fås från API:et
-	private String[] trimCoordinates(String coor) {
+	// Skalar bort onödiga tecken från koordinaterna som fås från API:et
+	private String trimCoordinates(String coor) {
 		StringBuilder sb = new StringBuilder(coor);
 		sb.delete(0, 113);
 		int lonEnd = sb.indexOf(",");
 		String lon = sb.substring(0, lonEnd);
 		int latEnd = sb.indexOf("<");
 		String lat = sb.substring(lonEnd + 1, latEnd);
-		return new String[] {lat, lon};
+		return lat + " " + lon;
 	}
 
 }
