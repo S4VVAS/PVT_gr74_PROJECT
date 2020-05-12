@@ -24,11 +24,6 @@ public class Requester {
 	
 	public Requester() {}
 	
-	public static void main(String[] args) {
-		Requester req = new Requester();
-		req.getPlaces(59.337, 18.089);
-	}
-	
 	// Tar två koordinater, returnerar JSONArray med platser
 	public JSONArray getPlaces(double lat, double lon) {
 		String url = makeURL(lat, lon);
