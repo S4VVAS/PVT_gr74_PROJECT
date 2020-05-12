@@ -18,7 +18,7 @@ public class RequesterTests {
 	public void getPlacesManyResults() {
 		Requester req = new Requester();
 		JSONArray result = req.getPlaces(59.332, 18.064); // Koordinater för Sergels Torg
-		assertEquals(224, result.size());
+		assertEquals(61, result.size());
 	}
 	
 }
