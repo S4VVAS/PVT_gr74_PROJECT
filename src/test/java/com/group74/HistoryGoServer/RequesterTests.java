@@ -21,4 +21,18 @@ public class RequesterTests {
 		assertEquals(25, result.size());
 	}
 	
+	@Test
+	public void getBoundedPlacesZeroResults() {
+		Requester req = new Requester();
+		JSONArray result = req.getPlaces(0, 0, 5, 5);
+		assertEquals(0, result.size());
+	}
+	
+	@Test
+	public void getBoundedPlacesManyResults() {
+		Requester req = new Requester(); 
+		JSONArray result = req.getPlaces(59.336, 18.086, 59.340, 18.093); // Koordinater för Karlaplan
+		assertEquals(2, result.size());
+	}
+	
 }

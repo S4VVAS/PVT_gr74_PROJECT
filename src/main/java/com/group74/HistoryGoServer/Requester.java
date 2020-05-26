@@ -23,20 +23,19 @@ public class Requester {
 	
 	public Requester() {}
 	
-	// Tar två koordinater, returnerar JSONArray med platser
+	// Tar koordinat, returnerar JSONArray med platser i en area kring koordinaten
 	public JSONArray getPlaces(double lat, double lon) {
 		String url = makeURL(lat, lon);
-		JSONArray apiRecords = sendRequest(url);
-		if (apiRecords == null) {
-			return null;
-		} else {
-			JSONObject trimmedJSON = trimJSON(apiRecords);
-			JSONObject adjustedPositions = uniteClosePlaces(trimmedJSON);
-			return makeArray(adjustedPositions);
-		}	
+		return sendAndRetrieve(url);	
+	}
+	
+	// Tar två koordinater, returnerar JSONArray med platser i en area inom koordinaterna 
+	public JSONArray getPlaces(double swLat, double swLon, double neLat, double neLon) {
+		String url = makeURL(swLat, swLon, neLat, neLon);
+		return sendAndRetrieve(url);
 	}
 
-	// Returnerar URL-sträng som används för geografisk sökning i API:et
+	// Tar en koordinat och returnerar URL-sträng som används för geografisk sökning i API:et
 	private String makeURL(double lat, double lon) {
 		double leftLat = lat - 0.003;
 		double leftLon = lon - 0.003;
@@ -47,6 +46,26 @@ public class Requester {
 				"%22%20AND%20itemType=%22Foto%22&hitsPerPage=500";
 	}
 	
+	// Tar två koordinater och returnerar URL-sträng som används för geografisk sökning i API:et
+	private String makeURL(double swLat, double swLon, double neLat, double neLon) {
+		return "http://kulturarvsdata.se/ksamsok/api?method=search&query=boundingBox=/WGS84%20%22" + 
+				swLon + "%20" + swLat + "%20" + neLon + "%20" + neLat + 
+				"%22%20AND%20itemType=%22Foto%22&hitsPerPage=500";
+	}
+	
+	// Skickar request, trimmar ner JSON-fil, justerar positioner, returnerar resultat  
+	private JSONArray sendAndRetrieve(String url) {
+		JSONArray apiRecords = sendRequest(url);
+		if (apiRecords == null) {
+			return null;
+		} else {
+			JSONObject trimmedJSON = trimJSON(apiRecords);
+			JSONObject adjustedPositions = uniteClosePlaces(trimmedJSON);
+			return makeArray(adjustedPositions);
+		}
+	}
+	
+	// Skickar request till API
 	private JSONArray sendRequest(String url) {
 		HttpClient client = HttpClient.newBuilder()
 				.connectTimeout(Duration.ofSeconds(5))
@@ -78,9 +97,9 @@ public class Requester {
 		}
 	}
 	
+	// Skalar bort onödig data som fås ifrån API
 	private JSONObject trimJSON(JSONArray records) {
 		JSONObject places = new JSONObject();
-//		ArrayList<String> coorList = new ArrayList<String>();
 		for (int i = 0; i < records.size(); i++) {
 			JSONObject record = (JSONObject) records.get(i);
 			JSONObject graph = (JSONObject) record.get("record");

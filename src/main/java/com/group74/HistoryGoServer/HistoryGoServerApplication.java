@@ -24,4 +24,12 @@ public class HistoryGoServerApplication extends SpringBootServletInitializer {
 							   @RequestParam(required = true) double lon) {
 		return req.getPlaces(lat, lon);
 	}
+	
+	@GetMapping(value="/getBoundedPlaces")
+	public JSONArray getPlaces(@RequestParam(required = true) double swLat,
+							   @RequestParam(required = true) double swLon,
+							   @RequestParam(required = true) double neLat,
+							   @RequestParam(required = true) double neLon) {
+		return req.getPlaces(swLat, swLon, neLat, neLon);
+	}
 }
