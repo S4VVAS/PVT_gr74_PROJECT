@@ -25,43 +25,72 @@ public class Requester {
 	
 	// Tar koordinat, returnerar JSONArray med platser i en area kring koordinaten
 	public JSONArray getPlaces(double lat, double lon) {
-		String url = makeURL(lat, lon);
-		return sendAndRetrieve(url);	
+		String url = makeURL(lat, lon, 60, 60);
+		JSONObject result = sendAndRetrieve(url);
+		return makeArray(result);
 	}
 	
 	// Tar två koordinater, returnerar JSONArray med platser i en area inom koordinaterna 
-	public JSONArray getPlaces(double swLat, double swLon, double neLat, double neLon) {
-		String url = makeURL(swLat, swLon, neLat, neLon);
-		return sendAndRetrieve(url);
+	public JSONArray getBoundedPlaces(double swLat, double swLon, double neLat, double neLon) {
+		String url = makeBoundedURL(swLat, swLon, neLat, neLon);
+		JSONObject result = sendAndRetrieve(url);
+		return makeArray(result);
 	}
-
+	
+	public JSONArray getCoorPlaces(String[] coors) {
+		JSONObject result = new JSONObject();
+		for (String c : coors) {
+			double lat = Double.parseDouble(getLat(c));
+			double lon = Double.parseDouble(getLon(c));
+			String url = makeURL(lat, lon, 3, 3);
+			JSONObject place = sendAndRetrieve(url);
+			System.out.println(place.toString());
+			if (place.size() != 0) {
+				result.put(c, place.get(c));
+			}
+		}
+		return makeArray(result);
+		
+	}
+	
+	private String getLat(String s) {
+		return s.substring(0, s.indexOf(" "));
+	}
+	
+	private String getLon(String s) {
+		return s.substring(s.indexOf(" ") + 1);
+	}
+	
 	// Tar en koordinat och returnerar URL-sträng som används för geografisk sökning i API:et
-	private String makeURL(double lat, double lon) {
-		double leftLat = lat - 0.003;
-		double leftLon = lon - 0.003;
-		double rightLat = lat + 0.003;
-		double rightLon = lon + 0.003;
+	public String makeURL(double lat, double lon, double w, double h) {
+		double leftLat = lat - normalizeMeasure(w); 
+		double leftLon = lon - normalizeMeasure(h);
+		double rightLat = lat + normalizeMeasure(w);
+		double rightLon = lon + normalizeMeasure(h);
 		return "http://kulturarvsdata.se/ksamsok/api?method=search&query=boundingBox=/WGS84%20%22" + 
 				leftLon + "%20" + leftLat + "%20" + rightLon + "%20" + rightLat + 
 				"%22%20AND%20itemType=%22Foto%22&hitsPerPage=500";
 	}
 	
+	private double normalizeMeasure(double m) {
+		return (m / 2) * 0.0001; 
+	}
+	
 	// Tar två koordinater och returnerar URL-sträng som används för geografisk sökning i API:et
-	private String makeURL(double swLat, double swLon, double neLat, double neLon) {
+	private String makeBoundedURL(double swLat, double swLon, double neLat, double neLon) {
 		return "http://kulturarvsdata.se/ksamsok/api?method=search&query=boundingBox=/WGS84%20%22" + 
 				swLon + "%20" + swLat + "%20" + neLon + "%20" + neLat + 
 				"%22%20AND%20itemType=%22Foto%22&hitsPerPage=500";
 	}
 	
 	// Skickar request, trimmar ner JSON-fil, justerar positioner, returnerar resultat  
-	private JSONArray sendAndRetrieve(String url) {
+	private JSONObject sendAndRetrieve(String url) {
 		JSONArray apiRecords = sendRequest(url);
 		if (apiRecords == null) {
 			return null;
 		} else {
 			JSONObject trimmedJSON = trimJSON(apiRecords);
-			JSONObject adjustedPositions = uniteClosePlaces(trimmedJSON);
-			return makeArray(adjustedPositions);
+			return uniteClosePlaces(trimmedJSON);
 		}
 	}
 	
@@ -131,7 +160,6 @@ public class Requester {
 			JSONArray placeArray = (JSONArray) places.get(position);
 			if (placeArray == null) {
 				placeArray = new JSONArray();
-//				coorList.add(position);
 			}
 			placeArray.add(place);
 			places.put(position, placeArray);

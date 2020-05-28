@@ -18,18 +18,26 @@ public class HistoryGoServerApplication extends SpringBootServletInitializer {
 		SpringApplication.run(HistoryGoServerApplication.class, args);
 	}
 	
-	//URL FORMAT = http://localhost:8080/getPlaces?lat=56&lon=46
+	// URL example: getPlaces?lat=56&lon=46
 	@GetMapping(value="/getPlaces")
 	public JSONArray getPlaces(@RequestParam(required = true) double lat,
 							   @RequestParam(required = true) double lon) {
 		return req.getPlaces(lat, lon);
 	}
 	
+	// URL example: getBoundedPlaces?swLat=59.0&swLon=18.0&neLat=59.5&neLon=18.5
 	@GetMapping(value="/getBoundedPlaces")
 	public JSONArray getPlaces(@RequestParam(required = true) double swLat,
 							   @RequestParam(required = true) double swLon,
 							   @RequestParam(required = true) double neLat,
 							   @RequestParam(required = true) double neLon) {
-		return req.getPlaces(swLat, swLon, neLat, neLon);
+		return req.getBoundedPlaces(swLat, swLon, neLat, neLon);
 	}
+	
+	// URL example: getCoorPlaces?coors=59.3293678848816 18.0687667553766,59.3276747180171 18.0685436339484
+	@GetMapping(value="/getCoorPlaces")
+	public JSONArray getCoorPlaces(@RequestParam(required = true) String[] coors) {
+		return req.getCoorPlaces(coors);
+	}
+	
 }
