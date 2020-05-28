@@ -29,10 +29,17 @@ public class RequesterTests {
 	}
 	
 	@Test
-	public void getBoundedPlacesManyResults() {
+	public void getBoundedPlacesSomeResults() {
 		Requester req = new Requester(); 
 		JSONArray result = req.getBoundedPlaces(59.336, 18.086, 59.340, 18.093); // Koordinater för Karlaplan
 		assertEquals(2, result.size());
+	}
+	
+	@Test
+	public void getBoundedPlacesManyResults() {
+		Requester req = new Requester();
+		JSONArray result = req.getBoundedPlaces(59.1, 18.1, 59.4, 18.4); // Koordinater för sökning från Haninge - Rindö
+		assertEquals(267, result.size());
 	}
 	
 	@Test

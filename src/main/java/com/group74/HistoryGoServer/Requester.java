@@ -21,20 +21,38 @@ import org.json.simple.parser.ParseException;
 
 public class Requester {
 	
+	private static final int MAX_HITS_PER_PAGE = 500;
+	
 	public Requester() {}
+	
+	//TODO: Refaktorisera: finns duplicerad kod, organisera om klassen (gör eventuellt klasshierarki)
 	
 	// Tar koordinat, returnerar JSONArray med platser i en area kring koordinaten
 	public JSONArray getPlaces(double lat, double lon) {
-		String url = makeURL(lat, lon, 60, 60);
-		JSONObject result = sendAndRetrieve(url);
-		return makeArray(result);
+		int start = 0; 
+		JSONArray apiRecords = new JSONArray();
+		do {
+			String url = makeURL(lat, lon, 60, 60, start + 1); // API:ets index för första entry är 1.
+			apiRecords.addAll(sendRequest(url));
+			start += MAX_HITS_PER_PAGE;
+		} while (apiRecords.size() != 0 && apiRecords.size() % MAX_HITS_PER_PAGE == 0);
+		JSONObject trimmedJSON = trimJSON(apiRecords);
+		JSONObject adjustedPositions = uniteClosePlaces(trimmedJSON);
+		return makeArray(adjustedPositions);
 	}
 	
 	// Tar två koordinater, returnerar JSONArray med platser i en area inom koordinaterna 
 	public JSONArray getBoundedPlaces(double swLat, double swLon, double neLat, double neLon) {
-		String url = makeBoundedURL(swLat, swLon, neLat, neLon);
-		JSONObject result = sendAndRetrieve(url);
-		return makeArray(result);
+		int start = 0;
+		JSONArray apiRecords = new JSONArray();
+		do {
+			String url = makeBoundedURL(swLat, swLon, neLat, neLon, start + 1); // API:ets index för första entry är 1.
+			apiRecords.addAll(sendRequest(url));
+			start += MAX_HITS_PER_PAGE;
+		} while (apiRecords.size() != 0 && apiRecords.size() % MAX_HITS_PER_PAGE == 0);
+		JSONObject trimmedJSON = trimJSON(apiRecords);
+		JSONObject adjustedPositions = uniteClosePlaces(trimmedJSON);
+		return makeArray(adjustedPositions);
 	}
 	
 	public JSONArray getCoorPlaces(String[] coors) {
@@ -42,9 +60,10 @@ public class Requester {
 		for (String c : coors) {
 			double lat = Double.parseDouble(getLat(c));
 			double lon = Double.parseDouble(getLon(c));
-			String url = makeURL(lat, lon, 3, 3);
-			JSONObject place = sendAndRetrieve(url);
-			System.out.println(place.toString());
+			String url = makeURL(lat, lon, 3, 3, 0);
+			JSONArray apiRecords = sendRequest(url);
+			JSONObject trimmedJSON = trimJSON(apiRecords);
+			JSONObject place = uniteClosePlaces(trimmedJSON);
 			if (place.size() != 0) {
 				result.put(c, place.get(c));
 			}
@@ -62,14 +81,14 @@ public class Requester {
 	}
 	
 	// Tar en koordinat och returnerar URL-sträng som används för geografisk sökning i API:et
-	public String makeURL(double lat, double lon, double w, double h) {
+	public String makeURL(double lat, double lon, double w, double h, int start) {
 		double leftLat = lat - normalizeMeasure(w); 
 		double leftLon = lon - normalizeMeasure(h);
 		double rightLat = lat + normalizeMeasure(w);
 		double rightLon = lon + normalizeMeasure(h);
 		return "http://kulturarvsdata.se/ksamsok/api?method=search&query=boundingBox=/WGS84%20%22" + 
 				leftLon + "%20" + leftLat + "%20" + rightLon + "%20" + rightLat + 
-				"%22%20AND%20itemType=%22Foto%22&hitsPerPage=500";
+				"%22%20AND%20itemType=%22Foto%22&hitsPerPage=500&startRecord=" + start;
 	}
 	
 	private double normalizeMeasure(double m) {
@@ -77,21 +96,10 @@ public class Requester {
 	}
 	
 	// Tar två koordinater och returnerar URL-sträng som används för geografisk sökning i API:et
-	private String makeBoundedURL(double swLat, double swLon, double neLat, double neLon) {
+	private String makeBoundedURL(double swLat, double swLon, double neLat, double neLon, int start) {
 		return "http://kulturarvsdata.se/ksamsok/api?method=search&query=boundingBox=/WGS84%20%22" + 
 				swLon + "%20" + swLat + "%20" + neLon + "%20" + neLat + 
-				"%22%20AND%20itemType=%22Foto%22&hitsPerPage=500";
-	}
-	
-	// Skickar request, trimmar ner JSON-fil, justerar positioner, returnerar resultat  
-	private JSONObject sendAndRetrieve(String url) {
-		JSONArray apiRecords = sendRequest(url);
-		if (apiRecords == null) {
-			return null;
-		} else {
-			JSONObject trimmedJSON = trimJSON(apiRecords);
-			return uniteClosePlaces(trimmedJSON);
-		}
+				"%22%20AND%20itemType=%22Foto%22&hitsPerPage=500&startRecord=" + start;
 	}
 	
 	// Skickar request till API
