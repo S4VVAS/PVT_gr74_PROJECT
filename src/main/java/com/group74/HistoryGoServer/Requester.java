@@ -28,7 +28,7 @@ public class Requester {
 	//TODO: Refaktorisera: finns duplicerad kod, organisera om klassen (gör eventuellt klasshierarki)
 	
 	// Tar koordinat, returnerar JSONArray med platser i en area kring koordinaten
-	public JSONArray getPlaces(double lat, double lon) {
+	public JSONArray getPlaces(String lat, String lon) {
 		int start = 0; 
 		JSONArray apiRecords = new JSONArray();
 		do {
@@ -42,7 +42,7 @@ public class Requester {
 	}
 	
 	// Tar två koordinater, returnerar JSONArray med platser i en area inom koordinaterna 
-	public JSONArray getBoundedPlaces(double swLat, double swLon, double neLat, double neLon) {
+	public JSONArray getBoundedPlaces(String swLat, String swLon, String neLat, String neLon) {
 		int start = 0;
 		JSONArray apiRecords = new JSONArray();
 		do {
@@ -58,9 +58,7 @@ public class Requester {
 	public JSONArray getCoorPlaces(String[] coors) {
 		JSONObject result = new JSONObject();
 		for (String c : coors) {
-			double lat = Double.parseDouble(getLat(c));
-			double lon = Double.parseDouble(getLon(c));
-			String url = makeURL(lat, lon, 3, 3, 0);
+			String url = makeURL(getLat(c), getLon(c), 3, 3, 0);
 			JSONArray apiRecords = sendRequest(url);
 			JSONObject trimmedJSON = trimJSON(apiRecords);
 			JSONObject place = uniteClosePlaces(trimmedJSON);
@@ -81,11 +79,13 @@ public class Requester {
 	}
 	
 	// Tar en koordinat och returnerar URL-sträng som används för geografisk sökning i API:et
-	public String makeURL(double lat, double lon, double w, double h, int start) {
-		double leftLat = lat - normalizeMeasure(w); 
-		double leftLon = lon - normalizeMeasure(h);
-		double rightLat = lat + normalizeMeasure(w);
-		double rightLon = lon + normalizeMeasure(h);
+	public String makeURL(String lat, String lon, double w, double h, int start) {
+		double latDo = Double.parseDouble(lat);
+		double lonDo = Double.parseDouble(lon);
+		double leftLat = latDo - normalizeMeasure(w); 
+		double leftLon = lonDo - normalizeMeasure(h);
+		double rightLat = latDo + normalizeMeasure(w);
+		double rightLon = lonDo + normalizeMeasure(h);
 		return "http://kulturarvsdata.se/ksamsok/api?method=search&query=boundingBox=/WGS84%20%22" + 
 				leftLon + "%20" + leftLat + "%20" + rightLon + "%20" + rightLat + 
 				"%22%20AND%20itemType=%22Foto%22&hitsPerPage=500&startRecord=" + start;
@@ -96,7 +96,7 @@ public class Requester {
 	}
 	
 	// Tar två koordinater och returnerar URL-sträng som används för geografisk sökning i API:et
-	private String makeBoundedURL(double swLat, double swLon, double neLat, double neLon, int start) {
+	private String makeBoundedURL(String swLat, String swLon, String neLat, String neLon, int start) {
 		return "http://kulturarvsdata.se/ksamsok/api?method=search&query=boundingBox=/WGS84%20%22" + 
 				swLon + "%20" + swLat + "%20" + neLon + "%20" + neLat + 
 				"%22%20AND%20itemType=%22Foto%22&hitsPerPage=500&startRecord=" + start;

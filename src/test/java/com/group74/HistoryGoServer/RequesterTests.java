@@ -10,35 +10,35 @@ public class RequesterTests {
 	@Test
 	public void getPlacesZeroResults() {
 		Requester req = new Requester();
-		JSONArray result = req.getPlaces(0, 0); 
+		JSONArray result = req.getPlaces("0", "0"); 
 		assertEquals(0, result.size());
 	}
 	
 	@Test
 	public void getPlacesManyResults() {
 		Requester req = new Requester();
-		JSONArray result = req.getPlaces(59.332, 18.064); // Koordinater för Sergels Torg
+		JSONArray result = req.getPlaces("59.332", "18.064"); // Koordinater för Sergels Torg
 		assertEquals(25, result.size());
 	}
 	
 	@Test
 	public void getBoundedPlacesZeroResults() {
 		Requester req = new Requester();
-		JSONArray result = req.getBoundedPlaces(0, 0, 5, 5);
+		JSONArray result = req.getBoundedPlaces("0", "0", "5", "5");
 		assertEquals(0, result.size());
 	}
 	
 	@Test
 	public void getBoundedPlacesSomeResults() {
 		Requester req = new Requester(); 
-		JSONArray result = req.getBoundedPlaces(59.336, 18.086, 59.340, 18.093); // Koordinater för Karlaplan
+		JSONArray result = req.getBoundedPlaces("59.336", "18.086", "59.340", "18.093"); // Koordinater för Karlaplan
 		assertEquals(2, result.size());
 	}
 	
 	@Test
 	public void getBoundedPlacesManyResults() {
 		Requester req = new Requester();
-		JSONArray result = req.getBoundedPlaces(59.1, 18.1, 59.4, 18.4); // Koordinater för sökning från Haninge - Rindö
+		JSONArray result = req.getBoundedPlaces("59.1", "18.1", "59.4", "18.4"); // Koordinater för sökning från Haninge - Rindö
 		assertEquals(267, result.size());
 	}
 	
