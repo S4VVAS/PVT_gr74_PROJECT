@@ -63,7 +63,9 @@ public class Requester {
 			JSONObject trimmedJSON = trimJSON(apiRecords);
 			JSONObject place = uniteClosePlaces(trimmedJSON);
 			if (place.size() != 0) {
-				result.put(c, place.get(c));
+				place.forEach((k,v) -> {
+					result.put(k, v);
+				});
 			}
 		}
 		return makeArray(result);
